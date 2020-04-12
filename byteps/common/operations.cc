@@ -19,6 +19,7 @@
 #include <memory>
 #include <thread>
 #include <unistd.h>
+#include <fstream>
 #include "core_loops.h"
 #include "global.h"
 #include "logging.h"
@@ -213,6 +214,20 @@ Status EnqueueTensor(BPSContext &context, std::shared_ptr<Tensor> input,
   return Status::OK();
 }
 
+void LogKeyMapping(std::string name, const std::vector<uint64_t>& keys) {
+  static std::ofstream log_file;
+  if (BytePSGlobal::GetRank() == 0 && const char* dict_path = std::getenv("BYTEPS_KEY_DICT_PATH")) {
+    if (!log_file.is_open()) {
+      log_file.open(dict_path);
+    }
+    log_file << name << ":";
+    for (auto& key: keys) {
+      log_file << " " << key << " ";
+    }
+    log_file << std::endl;
+  }
+}
+
 void InitTensor(BPSContext &context, size_t size, int dtype, void *cpubuff) {
   std::lock_guard<std::mutex> lock(context.init_mutex);
   if (context.initialized) {
@@ -307,6 +322,8 @@ void InitTensor(BPSContext &context, size_t size, int dtype, void *cpubuff) {
   BPS_CHECK_EQ(i, key_list.size());
 
   context.initialized = true;
+
+  LogKeyMapping(name, key_list);
 
   BPS_LOG(TRACE) << "Finish Init " << name << ", size=" << size
                  << ", parts=" << key_list.size();
