@@ -1,4 +1,4 @@
 [submodule "3rdparty/ps-lite"]
 	path = 3rdparty/ps-lite
-	url = https://github.com/joapolarbear/ps-lite
-	branch = byteps
+	url = https://github.com/chenyu-jiang/ps-lite-sniffable.git
+	branch = sniffable
