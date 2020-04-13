@@ -13,6 +13,7 @@
 // limitations under the License.
 // =============================================================================
 
+#include <fstream>
 #include "server.h"
 #include "queue.h"
 
@@ -20,6 +21,21 @@ namespace byteps {
 namespace server {
 
 using namespace ps;
+
+std::mutex server_trace_mu_;
+
+void LogServerTrace(const char* startend , uint64_t key, const char* msg) {
+  static std::ofstream log_file;
+  static const char* dict_path = std::getenv("BYTEPS_SERVER_LOG_PATH");
+  if (dict_path != NULL) {
+    std::lock_guard<std::mutex> lock(server_trace_mu_)
+    if (!log_file.is_open()) {
+      log_file.open(dict_path);
+    }
+    auto now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
+    log_file << now.count() << " : " << startend << ", " << key << ", " << msg << std::endl;
+  }
+}
 
 // engine related
 std::vector<PriorityQueue*> engine_queues_;
@@ -88,7 +104,9 @@ void BytePSServerEngineThread(int i) {
                     << "dst_addr: " << DEBUG_PRINT_TENSOR_ADDRESS(msg.dst) << "\t"
                     << "src_addr: " << DEBUG_PRINT_TENSOR_ADDRESS(msg.src) << "\t";
         }
+        LogServerTrace("start", msg.key, "copy_merged, " + std::to_string(i));
         bps_reducer_->copy(msg.dst, msg.src, msg.len);
+        LogServerTrace("end", msg.key, "copy_merged, " + std::to_string(i));
         if (is_debug) {
           std::lock_guard<std::mutex> lock(debug_mu_);
           LOG(INFO) << "stage: ENGINE_COPY_MERGED_TO_STORE_AFTER \t" 
@@ -124,10 +142,12 @@ void BytePSServerEngineThread(int i) {
                     << "dst_addr: " << DEBUG_PRINT_TENSOR_ADDRESS(msg.dst) << "\t"
                     << "src_addr: " << DEBUG_PRINT_TENSOR_ADDRESS(msg.src) << "\t";
         }
+        LogServerTrace("start", msg.key, "sum, " + std::to_string(i));
         CHECK_GE(bps_reducer_->sum(msg.dst, 
                                   msg.src, 
                                   msg.len, 
                                   bps_type), 0);
+        LogServerTrace("end", msg.key, "sum, " + std::to_string(i));
         if (is_debug) {
           std::lock_guard<std::mutex> lock(debug_mu_);
           LOG(INFO) << "stage: ENGINE_SUM_RECV_AFTER \t" 
@@ -187,12 +207,14 @@ void BytePSHandler(const ps::KVMeta& req_meta,
                   << " requests for key=" << key
                   << ", init the store buffer size=" << (size_t) req_data.lens[0];
       }
+      LogServerTrace("start", key, "init");
       // initialization
       stored.tensor = (char*) malloc(len); 
       stored.len = len;
       stored.dtype = type.dtype;
       CHECK(stored.tensor);
       bps_reducer_->copy(stored.tensor, recved, len); // we may not need this copy
+      LogServerTrace("end", key, "init");
       for (const auto& req : updates.request) {
         SendPushResponse(key, req, server);
       }
@@ -203,7 +225,9 @@ void BytePSHandler(const ps::KVMeta& req_meta,
       if (updates.request.empty()) { // from the first incoming worker
         if (sync_mode_) {
           if (is_engine_blocking_) {
+            LogServerTrace("start", key, "copy_first");
             bps_reducer_->copy(updates.merged.tensor, recved, len);
+            LogServerTrace("end", key, "copy_first");
           } else { // non-blocking
             if (debug_mode_ && (debug_key_ == key)) {
               std::lock_guard<std::mutex> lock(debug_mu_);  
@@ -214,15 +238,19 @@ void BytePSHandler(const ps::KVMeta& req_meta,
                         << "addr: " << DEBUG_PRINT_TENSOR_ADDRESS(recved);
             }
             // zero copy
+            LogServerTrace("start", key, "copy_first");
             updates.merged.tensor = recved;
             updates.merged.tmp_sarray = req_data;
+            LogServerTrace("end", key, "copy_first");
           }
         } else { // async mode, directly add to the buffer
           if (is_engine_blocking_) {
+            LogServerTrace("start", key, "sum");
             CHECK_GE(bps_reducer_->sum((void *) stored.tensor, 
                                       (void *) recved, 
                                       len, 
                                       bps_reducer_->GetDataType(stored.dtype)), 0);
+            LogServerTrace("end", key, "sum");
           } else {
             BytePSEngineMessage msg = {timestamp_++, type, key, stored.tensor, recved, len, SUM_RECV, req_data};
             engine_queues_[tid]->Push(msg);
@@ -232,10 +260,12 @@ void BytePSHandler(const ps::KVMeta& req_meta,
         CHECK(sync_mode_); 
         CHECK(updates.merged.tensor);
         if (is_engine_blocking_) {
+          LogServerTrace("start", key, "sum");
           CHECK_GE(bps_reducer_->sum((void *) updates.merged.tensor, 
                                     (void *) recved, 
                                     len, 
                                     bps_reducer_->GetDataType(updates.merged.dtype)), 0);
+          LogServerTrace("end", key, "sum");
         } else { // non-blocking
           if (debug_mode_ && (debug_key_ == key)) {
             std::lock_guard<std::mutex> lock(debug_mu_);
@@ -257,7 +287,9 @@ void BytePSHandler(const ps::KVMeta& req_meta,
         auto& stored = store_[key];
         auto& update = updates.merged;
         if (is_engine_blocking_) {
+          LogServerTrace("start", key, "copy_merged");
           bps_reducer_->copy(stored.tensor, updates.merged.tensor, len);
+          LogServerTrace("end", key, "copy_merged");
         } else {
           if (debug_mode_ && (debug_key_ == key)) {
             std::lock_guard<std::mutex> lock(debug_mu_);

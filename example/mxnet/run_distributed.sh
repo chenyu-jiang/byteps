@@ -1,6 +1,6 @@
 #!/bin/bash
 # set -x
-if [ $# -lt 3]; then
+if [ $# -lt 3 ]; then
     echo "usage: $0 rank num_servers num_workers"
     exit -1;
 fi
@@ -16,6 +16,8 @@ export BYTEPS_TRACE_ON=1
 export BYTEPS_TRACE_START_STEP=1
 export BYTEPS_TRACE_END_STEP=30
 export BYTEPS_TRACE_DIR=./traces
+export BYTEPS_SERVER_LOG_PATH=./traces/server_log.txt
+export BYTEPS_KEY_DICT_PATH=./traces/key_dict.txt
 export NVIDIA_VISIBLE_DEVICES=0
 export DMLC_WORKER_ID=${RANK}
 export DMLC_NUM_WORKER=${NUM_WORKERS}
