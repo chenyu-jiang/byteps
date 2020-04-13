@@ -24,7 +24,7 @@ using namespace ps;
 
 std::mutex server_trace_mu_;
 
-void LogServerTrace(const char* startend , uint64_t key, const char* msg) {
+void LogServerTrace(const std::string& startend , uint64_t key, const std::string& msg) {
   static std::ofstream log_file;
   static const char* dict_path = std::getenv("BYTEPS_SERVER_LOG_PATH");
   if (dict_path != NULL) {
