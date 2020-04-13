@@ -216,7 +216,8 @@ Status EnqueueTensor(BPSContext &context, std::shared_ptr<Tensor> input,
 
 void LogKeyMapping(std::string name, const std::vector<uint64_t>& keys) {
   static std::ofstream log_file;
-  if (BytePSGlobal::GetRank() == 0 && const char* dict_path = std::getenv("BYTEPS_KEY_DICT_PATH")) {
+  static const char* dict_path = std::getenv("BYTEPS_KEY_DICT_PATH");
+  if (BytePSGlobal::GetRank() == 0 && dict_path != NULL) {
     if (!log_file.is_open()) {
       log_file.open(dict_path);
     }
