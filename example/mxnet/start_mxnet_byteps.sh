@@ -45,11 +45,10 @@ fi
 export MXNET_EXEC_BULK_EXEC_TRAIN=0
 
 ## install networkx
-pip3 install networkx
+# pip3 install networkx
 # cp ../../byteps/mxnet/__init__.py /usr/local/lib/python3.6/dist-packages/byteps-0.1.0-py3.6-linux-x86_64.egg/byteps/mxnet/__init__.py
 
 ##----------------------------------- Start to run the program ----------------------------------- 
 echo 
 echo "-------------------- Start to run the program ---------------"
-python $path/../../launcher/launch.py ${PYTHON} $path/train_imagenet_byteps.py --benchmark 1 --batch-size=32 
-# --num-iters 1000
+python $path/../../launcher/launch.py ${PYTHON} $path/train_imagenet_byteps.py --benchmark 1 --batch-size=8 --num-iters 240
