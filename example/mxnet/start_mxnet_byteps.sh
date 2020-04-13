@@ -29,7 +29,7 @@ if [ $DMLC_ROLE = "worker" ]; then
 			--indent_level=2 \
 			--content_str="import os
 _param_names = [name for i, name in enumerate(self.arg_names) if name in self.param_names]
-path = os.environ.get('BYTEPS_TRACE_DIR', '.') + '/' + os.environ.get('BYTEPS_RANK') + '_' + os.environ.get('BYTEPS_LOCAL_RANK') + '/'
+path = os.environ.get('BYTEPS_TRACE_DIR', '.') + '/' + os.environ.get('BYTEPS_LOCAL_RANK') + '/'
 if path:
 	if not os.path.exists(path):
 		os.makedirs(path)
@@ -51,4 +51,4 @@ export MXNET_EXEC_BULK_EXEC_TRAIN=0
 ##----------------------------------- Start to run the program ----------------------------------- 
 echo 
 echo "-------------------- Start to run the program ---------------"
-python $path/../../launcher/launch.py ${PYTHON} $path/train_imagenet_byteps.py --benchmark 1 --batch-size=8 --num-iters 240
+${PYTHON} $path/../../launcher/launch.py ${PYTHON} $path/train_imagenet_byteps.py --num-layers 18 --benchmark 1 --batch-size 8 --num-examples 240 --num-epochs 1 --disp-batches 10
