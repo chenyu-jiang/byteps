@@ -1,7 +1,7 @@
 #!/bin/bash
 # set -x
-if [ $# -lt 2]; then
-    echo "usage: $0 num_servers num_workers"
+if [ $# -lt 3]; then
+    echo "usage: $0 rank num_servers num_workers"
     exit -1;
 fi
 
@@ -13,7 +13,8 @@ echo "NUM_SERVERS = ${NUM_SERVERS}"
 echo "NUM_WORKERS = ${NUM_WORKERS}"
 
 export BYTEPS_TRACE_ON=1
-export BYTEPS_TRACE_END_STEP=3
+export BYTEPS_TRACE_START_STEP=1
+export BYTEPS_TRACE_END_STEP=30
 export BYTEPS_TRACE_DIR=./traces
 export NVIDIA_VISIBLE_DEVICES=0
 export DMLC_WORKER_ID=${RANK}
@@ -35,7 +36,8 @@ fi
 
 
 # start server
-export DMLC_NODE_HOST='202.45.128.223'
+export BYTEPS_SERVER_ENABLE_PROFILE=1
+export BYTEPS_SERVER_PROFILE_OUTPUT_PATH=./traces/server_profile.json
 export DMLC_ROLE='server'
 export PORT='56724'
 export HEAPPROFILE=./S${RANK}
