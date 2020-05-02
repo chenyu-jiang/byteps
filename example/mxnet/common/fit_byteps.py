@@ -22,6 +22,7 @@ import time
 import re
 import math
 import byteps.mxnet as bps
+from byteps.common.dataloader import BPSDatasetLoader
 import mxnet as mx
 
 import sys
@@ -159,7 +160,9 @@ def fit(args, network, data_loader, **kwargs):
     logging.info('start with arguments %s', args)
 
     # data iterators
-    (train, val) = data_loader(args, (bps.rank(), bps.size()))
+    (data_train, val) = data_loader(args, (bps.rank(), bps.size()))
+    data_train = BPSDatasetLoader(data_train)
+    train = iter(data_train)
     if args.test_io:
         tic = time.time()
         for i, batch in enumerate(train):
