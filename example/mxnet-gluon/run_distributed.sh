@@ -33,7 +33,7 @@ if [ ${RANK} -eq 0 ]
 then
     echo "Starting scheduler on rank 0."
     export DMLC_ROLE='scheduler'
-    ./start_mxnet_byteps.sh &
+    ./run_mnist_gluon.sh &
 fi
 
 
@@ -43,12 +43,12 @@ export BYTEPS_SERVER_PROFILE_OUTPUT_PATH=./traces/server_profile.json
 export DMLC_ROLE='server'
 export PORT='56724'
 export HEAPPROFILE=./S${RANK}
-./start_mxnet_byteps.sh &
+./run_mnist_gluon.sh &
 
 # start worker
 export DMLC_ROLE='worker'
 export PORT='56725'
 export HEAPPROFILE=./W${RANK}
-./start_mxnet_byteps.sh &
+./run_mnist_gluon.sh &
 
 wait

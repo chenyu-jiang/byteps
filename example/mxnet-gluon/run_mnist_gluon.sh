@@ -1,14 +1,4 @@
 #!/bin/bash
-export NVIDIA_VISIBLE_DEVICES=0,1
-export DMLC_WORKER_ID=0
-export DMLC_NUM_WORKER=1
-export DMLC_ROLE=worker
-
-# the following value does not matter for non-distributed jobs
-export DMLC_NUM_SERVER=1
-export DMLC_PS_ROOT_URI=127.0.0.1
-export DMLC_PS_ROOT_PORT=9000
-
 # set the enriroment variable to diable running performance tests to find the best convolution alglrithm
 export MXNET_CUDNN_AUTOTUNE_DEFAULT=0
 
@@ -57,10 +47,9 @@ fi
 export MXNET_EXEC_BULK_EXEC_TRAIN=0
 
 ## install networkx
-pip3 install networkx
+#pip3 install networkx
 
 ##----------------------------------- Start to run the program ----------------------------------- 
 echo 
 echo "-------------------- Start to run the program ---------------"
-python $path/../../launcher/launch.py ${PYTHON} $path/train_mnist_byteps.py
-# --num-iters 1000
+python3 $path/../../launcher/launch.py ${PYTHON} $path/train_mnist_byteps.py --epochs 1
