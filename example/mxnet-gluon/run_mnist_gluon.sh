@@ -52,4 +52,8 @@ export MXNET_EXEC_BULK_EXEC_TRAIN=0
 ##----------------------------------- Start to run the program ----------------------------------- 
 echo 
 echo "-------------------- Start to run the program ---------------"
+<<<<<<< HEAD
 python3 $path/../../launcher/launch.py ${PYTHON} $path/train_mnist_byteps.py --epochs 1
+=======
+python3 $path/../../launcher/launch.py ${PYTHON} $path/train_mnist_byteps.py --epochs 2
+>>>>>>> 2d6cc635a8538b80d06012ea35b29ac926ce70ee
