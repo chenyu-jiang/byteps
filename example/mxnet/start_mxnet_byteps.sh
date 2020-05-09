@@ -51,4 +51,4 @@ export MXNET_EXEC_BULK_EXEC_TRAIN=0
 ##----------------------------------- Start to run the program ----------------------------------- 
 echo 
 echo "-------------------- Start to run the program ---------------"
-${PYTHON} $path/../../launcher/launch.py ${PYTHON} $path/train_imagenet_byteps.py --num-layers 18 --benchmark 1 --batch-size 8 --num-examples 240 --num-epochs 1 --disp-batches 10
+${PYTHON} $path/../../launcher/launch.py ${PYTHON} $path/train_imagenet_byteps.py --num-layers 18 --benchmark 1 --batch-size 8 --num-examples 400 --num-epochs 1 --disp-batches 10
