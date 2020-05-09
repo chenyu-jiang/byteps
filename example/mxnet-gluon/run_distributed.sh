@@ -38,7 +38,6 @@ fi
 
 
 # start server
-export DMLC_NODE_HOST='202.45.128.228'
 export BYTEPS_SERVER_ENABLE_PROFILE=1
 export BYTEPS_SERVER_PROFILE_OUTPUT_PATH=./traces/server_profile.json
 export DMLC_ROLE='server'
