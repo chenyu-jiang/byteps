@@ -19,6 +19,7 @@
 #include <memory>
 #include <thread>
 #include <unistd.h>
+#include <mutex>
 #include <fstream>
 #include "core_loops.h"
 #include "global.h"
@@ -217,7 +218,9 @@ Status EnqueueTensor(BPSContext &context, std::shared_ptr<Tensor> input,
 void LogKeyMapping(std::string name, const std::vector<uint64_t>& keys) {
   static std::ofstream log_file;
   static const char* dict_path = std::getenv("BYTEPS_KEY_DICT_PATH");
+  static std::mutex mtx;
   if (BytePSGlobal::GetRank() == 0 && dict_path != NULL) {
+    std::lock_guard<std::mutex> lock(mtx);
     if (!log_file.is_open()) {
       log_file.open(dict_path);
     }
